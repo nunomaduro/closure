@@ -9,7 +9,6 @@ use Opis\Closure\ReflectionClosure;
 
 // Fake
 use Foo\{Bar, Baz as Qux};
-use function Foo\f1;
 use function Bar\{b1, b2 as b3};
 
 test('resolve arguments', function () {

@@ -5,7 +5,6 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-use Opis\Closure\SecurityException;
 use Opis\Closure\SerializableClosure;
 
 uses(ClosureTest::class);

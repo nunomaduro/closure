@@ -9,6 +9,7 @@ use Opis\Closure\ReflectionClosure;
 
 // Fake
 use Foo\{Bar, Baz as Qux};
+
 // Dirty CS
 define(Bar::class, Bar::class);
 use function Foo\f1;
