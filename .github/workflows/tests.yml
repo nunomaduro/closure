@@ -49,4 +49,4 @@ jobs:
         if: "matrix.php == '8.0'"
 
       - name: Execute PHPUnit
-        run: vendor/bin/phpunit
+        run: vendor/bin/pest
