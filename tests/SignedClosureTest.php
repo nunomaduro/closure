@@ -92,7 +92,7 @@ test('secured closure without securiy provider', function () {
     $value = serialize(new SerializableClosure($closure));
     SerializableClosure::removeSecurityProvider();
     $closure = unserialize($value)->getClosure();
-    test()->assertTrue($closure());
+    expect($closure())->toBeTrue();
 });
 
 test('json secured closure without securiy provider', function () {
@@ -105,7 +105,7 @@ test('json secured closure without securiy provider', function () {
     $value = serialize(new SerializableClosure($closure));
     SerializableClosure::removeSecurityProvider();
     $closure = unserialize($value)->getClosure();
-    test()->assertTrue($closure());
+    expect($closure())->toBeTrue();
 });
 
 test('invalid secured closure without securiy provider', function () {
@@ -158,6 +158,6 @@ test('mixed encodings', function () {
     $u = unserialize($value)->getClosure();
     $r = $u();
 
-    test()->assertEquals($a, $r[0]);
-    test()->assertEquals($b, $r[1]);
+    expect($r[0])->toEqual($a);
+    expect($r[1])->toEqual($b);
 });

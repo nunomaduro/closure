@@ -14,7 +14,7 @@ test('custom serialization', function () {
 
     $a = new Abc($f);
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-    test()->assertTrue($u->test(true));
+    expect($u->test(true))->toBeTrue();
 });
 
 test('custom serialization same objects', function () {
@@ -26,19 +26,19 @@ test('custom serialization same objects', function () {
     $a = array($i, $i);
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
 
-    test()->assertTrue($u[0] === $u[1]);
+    expect($u[0] === $u[1])->toBeTrue();
 });
 
 test('custom serialization this object1', function () {
     $a = new A2();
     $a = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-    test()->assertEquals('Hello, World!', $a->getPhrase());
+    expect($a->getPhrase())->toEqual('Hello, World!');
 });
 
 test('custom serialization this object2', function () {
     $a = new A2();
     $a = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-    test()->assertTrue($a->getEquality());
+    expect($a->getEquality())->toBeTrue();
 });
 
 test('custom serialization same closures', function () {
@@ -49,7 +49,7 @@ test('custom serialization same closures', function () {
     $i = new Abc($f);
     $a = array($i, $i);
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-    test()->assertTrue($u[0]->getF() === $u[1]->getF());
+    expect($u[0]->getF() === $u[1]->getF())->toBeTrue();
 });
 
 test('custom serialization same closures2', function () {
@@ -59,13 +59,13 @@ test('custom serialization same closures2', function () {
 
     $a = array(new Abc($f), new Abc($f));
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-    test()->assertTrue($u[0]->getF() === $u[1]->getF());
+    expect($u[0]->getF() === $u[1]->getF())->toBeTrue();
 });
 
 test('private method clone', function () {
     $a = new Clone1();
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-    test()->assertEquals(1, $u->value());
+    expect($u->value())->toEqual(1);
 });
 
 test('private method clone2', function () {
@@ -74,7 +74,7 @@ test('private method clone2', function () {
         return $a->value();
     };
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-    test()->assertEquals(1, $u());
+    expect($u())->toEqual(1);
 });
 
 test('nested objects', function () {
@@ -88,7 +88,7 @@ test('nested objects', function () {
     };
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('nested objects2', function () {
@@ -100,7 +100,7 @@ test('nested objects2', function () {
         return true;
     };
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent))->closure;
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('nested objects3', function () {
@@ -111,7 +111,7 @@ test('nested objects3', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($obj));
     $c = $u->closure;
-    test()->assertTrue($c($u));
+    expect($c($u))->toBeTrue();
 });
 
 test('nested objects4', function () {
@@ -126,7 +126,7 @@ test('nested objects4', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent));
     $c = $u->closure;
-    test()->assertTrue($c($u));
+    expect($c($u))->toBeTrue();
 });
 
 test('nested objects5', function () {
@@ -143,7 +143,7 @@ test('nested objects5', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent));
     $c = $u->closure;
-    test()->assertTrue($c($u));
+    expect($c($u))->toBeTrue();
 });
 
 test('private property in parent class', function () {
@@ -154,7 +154,7 @@ test('private property in parent class', function () {
     };
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
-    test()->assertSame(['test'], $u());
+    expect($u())->toBe(['test']);
 });
 
 test('internal class1', function () {
@@ -166,7 +166,7 @@ test('internal class1', function () {
     };
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
-    test()->assertEquals('2018-02-23', $u());
+    expect($u())->toEqual('2018-02-23');
 });
 
 test('internal class2', function () {
@@ -178,7 +178,7 @@ test('internal class2', function () {
     };
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
-    test()->assertEquals('2018-02-23', $u());
+    expect($u())->toEqual('2018-02-23');
 });
 
 test('internal class3', function () {
@@ -187,7 +187,7 @@ test('internal class3', function () {
     $instance = (object)['date' => $date];
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($instance));
-    test()->assertEquals('2018-02-23', $u->date->format('Y-m-d'));
+    expect($u->date->format('Y-m-d'))->toEqual('2018-02-23');
 });
 
 test('object reserialization', function () {
@@ -196,13 +196,13 @@ test('object reserialization', function () {
     $o = \Opis\Closure\unserialize($s1);
     $s2 = \Opis\Closure\serialize($o);
 
-    test()->assertEquals($s1, $s2);
+    expect($s2)->toEqual($s1);
 });
 
 test('is short closure', function () {
     $f = function () { };
 
-    test()->assertFalse((new ReflectionClosure($f))->isShortClosure());
+    expect((new ReflectionClosure($f))->isShortClosure())->toBeFalse();
 });
 
 test('if this is correctly serialized', function () {
@@ -210,7 +210,7 @@ test('if this is correctly serialized', function () {
     $f = $o->create();
     $f = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
     $f = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-    test()->assertEquals(1, $f());
+    expect($f())->toEqual(1);
 });
 
 test('test', function ($value) {

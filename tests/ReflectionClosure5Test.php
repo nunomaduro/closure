@@ -17,9 +17,9 @@ test('is short closure', function () {
     $f2 = static fn() => 1;
     $f3 = function () { fn() => 1; };
 
-    test()->assertTrue(r($f1)->isShortClosure());
-    test()->assertTrue(r($f2)->isShortClosure());
-    test()->assertFalse(r($f3)->isShortClosure());
+    expect(r($f1)->isShortClosure())->toBeTrue();
+    expect(r($f2)->isShortClosure())->toBeTrue();
+    expect(r($f3)->isShortClosure())->toBeFalse();
 });
 
 test('basic short closure', function () {
@@ -38,11 +38,11 @@ test('basic short closure', function () {
     $f5 = fn(&$a) : string => "hello";
     $e5 = 'fn(&$a) : string => "hello"';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
 });
 
 test('resolve types', function () {
@@ -58,10 +58,10 @@ test('resolve types', function () {
     $f4 = fn() => new Qux();
     $e4 = 'fn() => new \Foo\Baz\Qux()';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
 });
 
 test('class keywords instantiation', function () {
@@ -94,10 +94,10 @@ test('function inside expressions and arrays', function () {
     $f4 = fn () => ($a === true) && (!empty([0,1,]));
     $e4 = 'fn () => ($a === true) && (!empty([0,1,]))';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2[0]));
-    test()->assertEquals($e3, c($f3[0]));
-    test()->assertEquals($e4, c($f4));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2[0]))->toEqual($e2);
+    expect(c($f3[0]))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
 });
 
 test('serialize', function () {
@@ -111,10 +111,10 @@ test('serialize', function () {
     $f3 = fn(int $b, int $c = 5) : int => ($a + $b) * $c;
     $c3 = s($f3);
 
-    test()->assertEquals('hello', $c1());
-    test()->assertEquals(7, $c2(4, 3));
-    test()->assertEquals(40, $c3(4));
-    test()->assertEquals(48, $c3(4, 6));
+    expect($c1())->toEqual('hello');
+    expect($c2(4, 3))->toEqual(7);
+    expect($c3(4))->toEqual(40);
+    expect($c3(4, 6))->toEqual(48);
 });
 
 test('typed properties', function () {
@@ -122,7 +122,7 @@ test('typed properties', function () {
     $s = s(function () use ($user) {
         return true;
     });
-    test()->assertTrue($s());
+    expect($s())->toBeTrue();
 
     $user = new User();
     $product = new Product();
@@ -133,7 +133,7 @@ test('typed properties', function () {
         return $user->getProduct()->name;
     });
 
-    test()->assertEquals('PC', $u());
+    expect($u())->toEqual('PC');
 });
 
 // Helpers

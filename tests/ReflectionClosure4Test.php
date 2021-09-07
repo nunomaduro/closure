@@ -14,7 +14,7 @@ test('resolve arguments', function () {
     $f1 = function (object $p){};
     $e1 = 'function (object $p){}';
 
-    test()->assertEquals($e1, c($f1));
+    expect(c($f1))->toEqual($e1);
 });
 
 test('resolve return type', function () {
@@ -22,14 +22,14 @@ test('resolve return type', function () {
     $e1 = 'function (): object{}';
 
 
-    test()->assertEquals($e1, c($f1));
+    expect(c($f1))->toEqual($e1);
 });
 
 test('trailing comma', function () {
     $f1 = function (): Baz {};
     $e1 = 'function (): \Foo\Bar {}';
 
-    test()->assertEquals($e1, c($f1));
+    expect(c($f1))->toEqual($e1);
 });
 
 // Helpers

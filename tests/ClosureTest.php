@@ -16,7 +16,7 @@ test('closure use return value', function () {
 
     $u = s($c);
 
-    test()->assertEquals($u(), $a);
+    expect($a)->toEqual($u());
 });
 
 test('closure use transformation', function () {
@@ -26,7 +26,7 @@ test('closure use transformation', function () {
         return $a;
     })));
 
-    test()->assertEquals(100, $c());
+    expect($c())->toEqual(100);
 });
 
 test('closure use return closure', function () {
@@ -40,7 +40,7 @@ test('closure use return closure', function () {
     $v = 1;
     $u = s($b);
 
-    test()->assertEquals($v + 1, $u(1));
+    expect($u(1))->toEqual($v + 1);
 });
 
 test('closure use return closure by ref', function () {
@@ -54,7 +54,7 @@ test('closure use return closure by ref', function () {
     $v = 1;
     $u = s($b);
 
-    test()->assertEquals($v + 1, $u(1));
+    expect($u(1))->toEqual($v + 1);
 });
 
 test('closure use self', function () {
@@ -64,7 +64,7 @@ test('closure use self', function () {
     };
     $u = s($a);
 
-    test()->assertEquals($u, $u());
+    expect($u())->toEqual($u);
 });
 
 test('closure use self in array', function () {
@@ -79,7 +79,7 @@ test('closure use self in array', function () {
 
     $u = s($b);
 
-    test()->assertEquals($u, $u());
+    expect($u())->toEqual($u);
 });
 
 test('closure use self in object', function () {
@@ -94,7 +94,7 @@ test('closure use self in object', function () {
 
     $u = s($b);
 
-    test()->assertEquals($u, $u());
+    expect($u())->toEqual($u);
 });
 
 test('closure use self in multi array', function () {
@@ -116,7 +116,7 @@ test('closure use self in multi array', function () {
 
     $u = s($c);
 
-    test()->assertEquals($u, $u(0));
+    expect($u(0))->toEqual($u);
 });
 
 test('closure use self in instance', function () {
@@ -126,7 +126,7 @@ test('closure use self in instance', function () {
     };
     $i->o = $c;
     $u = s($c);
-    test()->assertTrue($u($u));
+    expect($u($u))->toBeTrue();
 });
 
 test('closure use self in instance2', function () {
@@ -136,7 +136,7 @@ test('closure use self in instance2', function () {
     };
     $i->o = &$c;
     $u = s($c);
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('closure serialization twice', function () {
@@ -150,7 +150,7 @@ test('closure serialization twice', function () {
 
     $u = s(s($b));
 
-    test()->assertEquals('ok', $u('ok'));
+    expect($u('ok'))->toEqual('ok');
 });
 
 test('closure real serialization', function () {
@@ -159,7 +159,7 @@ test('closure real serialization', function () {
     };
 
     $u = s(s($f));
-    test()->assertEquals(5, $u(2, 3));
+    expect($u(2, 3))->toEqual(5);
 });
 
 test('closure objectin object', function () {
@@ -183,7 +183,7 @@ test('closure objectin object', function () {
     $ok = $x->func == $x->subtest->func;
     $ok = $ok && ($x->subtest->func == $g);
 
-    test()->assertEquals(true, $ok);
+    expect($ok)->toEqual(true);
 });
 
 test('closure nested', function () {
@@ -205,7 +205,7 @@ test('closure nested', function () {
 
     $os = s($o);
 
-    test()->assertEquals(true, $os(true));
+    expect($os(true))->toEqual(true);
 });
 
 test('closure curly syntax', function () {
@@ -215,7 +215,7 @@ test('closure curly syntax', function () {
         return $x->{'a'} + $x->{$b};
     };
     $f = s($f);
-    test()->assertEquals(4, $f());
+    expect($f())->toEqual(4);
 });
 
 test('closure bind to object', function () {
@@ -229,7 +229,7 @@ test('closure bind to object', function () {
 
     $u = s($b);
 
-    test()->assertEquals('public called', $u());
+    expect($u())->toEqual('public called');
 });
 
 test('closure bind to object scope', function () {
@@ -243,7 +243,7 @@ test('closure bind to object scope', function () {
 
     $u = s($b);
 
-    test()->assertEquals('protected called', $u());
+    expect($u())->toEqual('protected called');
 });
 
 test('closure bind to object static scope', function () {
@@ -257,13 +257,13 @@ test('closure bind to object static scope', function () {
 
     $u = s($b);
 
-    test()->assertEquals('static protected called', $u());
+    expect($u())->toEqual('static protected called');
 });
 
 test('closure static', function () {
     $f = static function(){};
     $rc = new ReflectionClosure($f);
-    test()->assertTrue($rc->isStatic());
+    expect($rc->isStatic())->toBeTrue();
 });
 
 test('closure static fail', function () {
@@ -271,21 +271,21 @@ test('closure static fail', function () {
         // This will not work
     function(){};
     $rc = new ReflectionClosure($f);
-    test()->assertFalse($rc->isStatic());
+    expect($rc->isStatic())->toBeFalse();
 });
 
 test('create closure', function () {
     $closure = SerializableClosure::createClosure('$a, $b', 'return $a + $b;');
 
     test()->assertNotNull($closure);
-    test()->assertTrue($closure instanceof Closure);
-    test()->assertEquals(17, $closure(7, 10));
+    expect($closure instanceof Closure)->toBeTrue();
+    expect($closure(7, 10))->toEqual(17);
 
     $closure = s($closure);
 
     test()->assertNotNull($closure);
-    test()->assertTrue($closure instanceof Closure);
-    test()->assertEquals(11, $closure(5, 6));
+    expect($closure instanceof Closure)->toBeTrue();
+    expect($closure(5, 6))->toEqual(11);
 });
 
 test('closure scope remains the same', function () {
@@ -297,17 +297,17 @@ test('closure scope remains the same', function () {
 
     test()->assertNotNull($rf->getClosureScopeClass());
     test()->assertNotNull($ro->getClosureScopeClass());
-    test()->assertEquals($rf->getClosureScopeClass()->name, $ro->getClosureScopeClass()->name);
-    test()->assertEquals($rf->getClosureScopeClass()->name, $ro->getClosureScopeClass()->name);
-    test()->assertEquals(__CLASS__, $ro->getClosureScopeClass()->name);
+    expect($ro->getClosureScopeClass()->name)->toEqual($rf->getClosureScopeClass()->name);
+    expect($ro->getClosureScopeClass()->name)->toEqual($rf->getClosureScopeClass()->name);
+    expect($ro->getClosureScopeClass()->name)->toEqual(__CLASS__);
 
     $f = $f->bindTo(null, null);
     $o = s($f);
     $rf = new ReflectionClosure($f);
     $ro = new ReflectionClosure($o);
 
-    test()->assertNull($rf->getClosureScopeClass());
-    test()->assertNull($ro->getClosureScopeClass());
+    expect($rf->getClosureScopeClass())->toBeNull();
+    expect($ro->getClosureScopeClass())->toBeNull();
 });
 
 // Helpers

@@ -14,35 +14,35 @@ use Foo\Baz as Qux;
 test('new instance', function () {
     $f = function (){ $c = '\A'; new $c;};
     $e = 'function (){ $c = \'\A\'; new $c;}';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 });
 
 test('new instance2', function () {
     $f = function (){ new A; };
     $e = 'function (){ new \Opis\Closure\Test\A; }';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 
     $f = function (){ new A\B; };
     $e = 'function (){ new \Opis\Closure\Test\A\B; }';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 
     $f = function (){ new \A; };
     $e = 'function (){ new \A; }';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 
     $f = function (){ new A(new B, [new C]); };
     $e = 'function (){ new \Opis\Closure\Test\A(new \Opis\Closure\Test\B, [new \Opis\Closure\Test\C]); }';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 
     $f = function (){ new self; new static; new parent; };
     $e = 'function (){ new self; new static; new parent; }';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 });
 
 test('instance of', function () {
     $f = function (){ $c = null; $b = '\X\y'; v($c instanceof $b);};
     $e = 'function (){ $c = null; $b = \'\X\y\'; v($c instanceof $b);}';
-    test()->assertEquals($e, c($f));
+    expect(c($f))->toEqual($e);
 });
 
 test('closure resolve arguments', function () {
@@ -64,12 +64,12 @@ test('closure resolve arguments', function () {
     $f6 = function (Foo $p){};
     $e6 = 'function (\\' . __NAMESPACE__ . '\Foo $p){}';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
 });
 
 test('cloure resolve in body', function () {
@@ -92,12 +92,12 @@ test('cloure resolve in body', function () {
     $e6 = 'function () { return new \\' . __NAMESPACE__ . '\Foo(); }';
 
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
 });
 
 test('closure resolve static method', function () {
@@ -121,12 +121,12 @@ test('closure resolve static method', function () {
     $e6 = 'function () { return \\' . __NAMESPACE__ . '\Foo::test(); }';
 
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
 });
 
 test('static inside closure', function () {
@@ -136,8 +136,8 @@ test('static inside closure', function () {
     $f2 = function ($a) { return $a instanceof static; };
     $e2 = 'function ($a) { return $a instanceof static; }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
 });
 
 test('self inside closure', function () {
@@ -147,8 +147,8 @@ test('self inside closure', function () {
     $f2 = function ($a) { return $a instanceof self; };
     $e2 = 'function ($a) { return $a instanceof self; }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
 });
 
 test('parent inside closure', function () {
@@ -158,15 +158,15 @@ test('parent inside closure', function () {
     $f2 = function ($a) { return $a instanceof parent; };
     $e2 = 'function ($a) { return $a instanceof parent; }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
 });
 
 test('interpolation1', function () {
     $f1 = function() { return "${foo}${bar}{$foobar}"; };
     $e1 = 'function() { return "${foo}${bar}{$foobar}"; }';
 
-    test()->assertEquals($e1, c($f1));
+    expect(c($f1))->toEqual($e1);
 });
 
 // Helpers

@@ -29,11 +29,11 @@ test('resolve arguments', function () {
     $e5 = 'function (?array $p, ?string $x){}';
 
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
 });
 
 test('resolve return type', function () {
@@ -64,15 +64,15 @@ test('resolve return type', function () {
     $f9 = function (): void{};
     $e9 = 'function (): void{}';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
-    test()->assertEquals($e7, c($f7));
-    test()->assertEquals($e8, c($f8));
-    test()->assertEquals($e9, c($f9));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
+    expect(c($f7))->toEqual($e7);
+    expect(c($f8))->toEqual($e8);
+    expect(c($f9))->toEqual($e9);
 });
 
 // Helpers

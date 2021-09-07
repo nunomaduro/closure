@@ -13,7 +13,7 @@ test('recursive array', function () {
         return $a[1][0];
     };
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-    test()->assertEquals('foo', $u());
+    expect($u())->toEqual('foo');
 });
 
 test('recursive array2', function () {
@@ -23,7 +23,7 @@ test('recursive array2', function () {
         return $a[1][0];
     };
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-    test()->assertEquals('foo', $u());
+    expect($u())->toEqual('foo');
 });
 
 test('recursive array3', function () {
@@ -35,7 +35,7 @@ test('recursive array3', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
     $u = $u[1][0];
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('recursive array4', function () {
@@ -48,7 +48,7 @@ test('recursive array4', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
     $u = $u[1][0];
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('recursive array5', function () {
@@ -61,7 +61,7 @@ test('recursive array5', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
     $u = $u[1][0];
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('recursive array6', function () {
@@ -76,7 +76,7 @@ test('recursive array6', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($o));
     $u = $u->a[1][0];
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });
 
 test('recursive array7', function () {
@@ -91,5 +91,5 @@ test('recursive array7', function () {
 
     $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($o));
     $u = $u->a[1][0];
-    test()->assertTrue($u());
+    expect($u())->toBeTrue();
 });

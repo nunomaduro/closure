@@ -40,14 +40,14 @@ test('resolve arguments', function () {
     $e8 = 'function ($a = [self::VALUE, parent::VALUE]){}';
 
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
-    test()->assertEquals($e7, c($f7));
-    test()->assertEquals($e8, c($f8));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
+    expect(c($f7))->toEqual($e7);
+    expect(c($f8))->toEqual($e8);
 });
 
 test('resolve return type', function () {
@@ -78,15 +78,15 @@ test('resolve return type', function () {
     $f9 = function (){ return Relative\CONST_X + 1;};
     $e9 = 'function (){ return \\' . __NAMESPACE__. '\Relative\CONST_X + 1;}';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
-    test()->assertEquals($e7, c($f7));
-    test()->assertEquals($e8, c($f8));
-    test()->assertEquals($e9, c($f9));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
+    expect(c($f7))->toEqual($e7);
+    expect(c($f8))->toEqual($e8);
+    expect(c($f9))->toEqual($e9);
 });
 
 test('closure inside closure', function () {
@@ -97,8 +97,8 @@ test('closure inside closure', function () {
     $f2 = function() { return function (A $a): A { return $a; }; };
     $e2 = 'function() { return function (\Opis\Closure\Test\A $a): \Opis\Closure\Test\A { return $a; }; }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
 });
 
 test('anonymous inside closure', function () {
@@ -111,9 +111,9 @@ test('anonymous inside closure', function () {
     $f3 = function() { return new class { function x(A $a): B {} }; };
     $e3 = 'function() { return new class { function x(\Opis\Closure\Test\A $a): \Opis\Closure\Test\B {} }; }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
 });
 
 test('closure resolve traits names in anonymous classes', function () {
@@ -139,13 +139,13 @@ test('closure resolve traits names in anonymous classes', function () {
     $e7 = 'function () { new class { use \Foo\Bar; }; function a(\Foo\Baz $q): \Foo\Bar '
         . '{ \Foo\f1(); $a = new class extends \Foo\Bar {}; } }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
-    test()->assertEquals($e7, c($f7));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
+    expect(c($f7))->toEqual($e7);
 });
 
 test('keyword as static method', function () {
@@ -174,18 +174,18 @@ test('keyword as static method', function () {
     $f12 = function() { Bar::use(); };
     $e12 = 'function() { \Foo\Bar::use(); }';
 
-    test()->assertEquals($e1, c($f1));
-    test()->assertEquals($e2, c($f2));
-    test()->assertEquals($e3, c($f3));
-    test()->assertEquals($e4, c($f4));
-    test()->assertEquals($e5, c($f5));
-    test()->assertEquals($e6, c($f6));
-    test()->assertEquals($e7, c($f7));
-    test()->assertEquals($e8, c($f8));
-    test()->assertEquals($e9, c($f9));
-    test()->assertEquals($e10, c($f10));
-    test()->assertEquals($e11, c($f11));
-    test()->assertEquals($e12, c($f12));
+    expect(c($f1))->toEqual($e1);
+    expect(c($f2))->toEqual($e2);
+    expect(c($f3))->toEqual($e3);
+    expect(c($f4))->toEqual($e4);
+    expect(c($f5))->toEqual($e5);
+    expect(c($f6))->toEqual($e6);
+    expect(c($f7))->toEqual($e7);
+    expect(c($f8))->toEqual($e8);
+    expect(c($f9))->toEqual($e9);
+    expect(c($f10))->toEqual($e10);
+    expect(c($f11))->toEqual($e11);
+    expect(c($f12))->toEqual($e12);
 });
 
 test('this inside anonymous class', function () {
@@ -228,10 +228,10 @@ test('this inside anonymous class', function () {
         $self = $this;
     };
 
-    test()->assertFalse((new ReflectionClosure($f1))->isBindingRequired());
-    test()->assertFalse((new ReflectionClosure($f2))->isBindingRequired());
-    test()->assertTrue((new ReflectionClosure($f3))->isBindingRequired());
-    test()->assertTrue((new ReflectionClosure($f4))->isBindingRequired());
+    expect((new ReflectionClosure($f1))->isBindingRequired())->toBeFalse();
+    expect((new ReflectionClosure($f2))->isBindingRequired())->toBeFalse();
+    expect((new ReflectionClosure($f3))->isBindingRequired())->toBeTrue();
+    expect((new ReflectionClosure($f4))->isBindingRequired())->toBeTrue();
 });
 
 test('is scope required', function () {
@@ -259,17 +259,17 @@ test('is scope required', function () {
         };
     };
 
-    test()->assertTrue(r($f1)->isScopeRequired());
-    test()->assertTrue(r($f2)->isScopeRequired());
-    test()->assertTrue(r($f3)->isScopeRequired());
-    test()->assertFalse(r($f4)->isScopeRequired());
-    test()->assertFalse(r($f5)->isScopeRequired());
-    test()->assertFalse(r($f6)->isScopeRequired());
-    test()->assertFalse(r($f7)->isScopeRequired());
-    test()->assertTrue(r($f8)->isScopeRequired());
+    expect(r($f1)->isScopeRequired())->toBeTrue();
+    expect(r($f2)->isScopeRequired())->toBeTrue();
+    expect(r($f3)->isScopeRequired())->toBeTrue();
+    expect(r($f4)->isScopeRequired())->toBeFalse();
+    expect(r($f5)->isScopeRequired())->toBeFalse();
+    expect(r($f6)->isScopeRequired())->toBeFalse();
+    expect(r($f7)->isScopeRequired())->toBeFalse();
+    expect(r($f8)->isScopeRequired())->toBeTrue();
     test()->assertTrue(r($f9)->isScopeRequired(), 'new static()');
-    test()->assertTrue(r($f10)->isScopeRequired());
-    test()->assertFalse(r($f11)->isScopeRequired());
+    expect(r($f10)->isScopeRequired())->toBeTrue();
+    expect(r($f11)->isScopeRequired())->toBeFalse();
 });
 
 // Helpers
