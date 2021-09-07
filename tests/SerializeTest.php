@@ -6,8 +6,6 @@
  * =========================================================================== */
 
 use Opis\Closure\ReflectionClosure;
-use stdClass;
-use Closure;
 
 test('custom serialization', function () {
     $f =  function ($value){

@@ -5,7 +5,6 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-use Closure;
 use Opis\Closure\ReflectionClosure;
 
 // Fake

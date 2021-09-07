@@ -5,7 +5,6 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-use stdClass;
 
 test('recursive array', function () {
     $a = ['foo'];

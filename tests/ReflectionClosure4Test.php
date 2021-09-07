@@ -5,7 +5,6 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-use Closure;
 use Opis\Closure\ReflectionClosure;
 use Foo\{
     Bar as Baz,

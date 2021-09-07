@@ -5,9 +5,6 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-use Closure;
-use stdClass;
-use Serializable;
 use Opis\Closure\ReflectionClosure;
 use Opis\Closure\SerializableClosure;
 
