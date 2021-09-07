@@ -5,296 +5,248 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-namespace Opis\Closure\Test;
-
 use Opis\Closure\ReflectionClosure;
 use stdClass;
 use Closure;
 
-class SerializeTest extends \PHPUnit\Framework\TestCase
+test('custom serialization', function () {
+    $f =  function ($value){
+        return $value;
+    };
+
+    $a = new Abc($f);
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+    test()->assertTrue($u->test(true));
+});
+
+test('custom serialization same objects', function () {
+    $f =  function ($value){
+        return $value;
+    };
+
+    $i = new Abc($f);
+    $a = array($i, $i);
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+
+    test()->assertTrue($u[0] === $u[1]);
+});
+
+test('custom serialization this object1', function () {
+    $a = new A2();
+    $a = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+    test()->assertEquals('Hello, World!', $a->getPhrase());
+});
+
+test('custom serialization this object2', function () {
+    $a = new A2();
+    $a = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+    test()->assertTrue($a->getEquality());
+});
+
+test('custom serialization same closures', function () {
+    $f =  function ($value){
+        return $value;
+    };
+
+    $i = new Abc($f);
+    $a = array($i, $i);
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+    test()->assertTrue($u[0]->getF() === $u[1]->getF());
+});
+
+test('custom serialization same closures2', function () {
+    $f =  function ($value){
+        return $value;
+    };
+
+    $a = array(new Abc($f), new Abc($f));
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+    test()->assertTrue($u[0]->getF() === $u[1]->getF());
+});
+
+test('private method clone', function () {
+    $a = new Clone1();
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
+    test()->assertEquals(1, $u->value());
+});
+
+test('private method clone2', function () {
+    $a = new Clone1();
+    $f = function () use($a){
+        return $a->value();
+    };
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
+    test()->assertEquals(1, $u());
+});
+
+test('nested objects', function () {
+    $parent = new Entity();
+    $child = new Entity();
+    $parent->children[] = $child;
+    $child->parent = $parent;
+
+    $f = function () use($parent, $child){
+        return $parent === $child->parent;
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
+    test()->assertTrue($u());
+});
+
+test('nested objects2', function () {
+    $child = new stdClass();
+    $parent = new stdClass();
+    $child->parent = $parent;
+    $parent->childern = [$child];
+    $parent->closure = function () use($child){
+        return true;
+    };
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent))->closure;
+    test()->assertTrue($u());
+});
+
+test('nested objects3', function () {
+    $obj = new \stdClass;
+    $obj->closure = function ($arg) use ($obj) {
+        return $arg === $obj;
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($obj));
+    $c = $u->closure;
+    test()->assertTrue($c($u));
+});
+
+test('nested objects4', function () {
+    $parent = new \stdClass;
+    $child1 = new \stdClass;
+
+    $child1->parent = $parent;
+
+    $parent->closure = function ($p) use ($child1) {
+        return $child1->parent === $p;
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent));
+    $c = $u->closure;
+    test()->assertTrue($c($u));
+});
+
+test('nested objects5', function () {
+    $parent = new \stdClass;
+    $child1 = new \stdClass;
+    $child2 = new \stdClass;
+
+    $child1->parent = $parent;
+    $child2->parent = $parent;
+
+    $parent->closure = function ($p) use ($child1, $child2) {
+        return $child1->parent === $child2->parent && $child1->parent === $p;
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent));
+    $c = $u->closure;
+    test()->assertTrue($c($u));
+});
+
+test('private property in parent class', function () {
+    $instance = new ChildClass;
+
+    $closure = function () use ($instance) {
+        return $instance->getFoobar();
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
+    test()->assertSame(['test'], $u());
+});
+
+test('internal class1', function () {
+    $date = new \DateTime();
+    $date->setDate(2018, 2, 23);
+
+    $closure = function () use($date){
+        return $date->format('Y-m-d');
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
+    test()->assertEquals('2018-02-23', $u());
+});
+
+test('internal class2', function () {
+    $date = new \DateTime();
+    $date->setDate(2018, 2, 23);
+    $instance = (object)['date' => $date];
+    $closure = function () use($instance){
+        return $instance->date->format('Y-m-d');
+    };
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
+    test()->assertEquals('2018-02-23', $u());
+});
+
+test('internal class3', function () {
+    $date = new \DateTime();
+    $date->setDate(2018, 2, 23);
+    $instance = (object)['date' => $date];
+
+    $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($instance));
+    test()->assertEquals('2018-02-23', $u->date->format('Y-m-d'));
+});
+
+test('object reserialization', function () {
+    $o = (object)['foo'=>'bar'];
+    $s1 = \Opis\Closure\serialize($o);
+    $o = \Opis\Closure\unserialize($s1);
+    $s2 = \Opis\Closure\serialize($o);
+
+    test()->assertEquals($s1, $s2);
+});
+
+test('is short closure', function () {
+    $f = function () { };
+
+    test()->assertFalse((new ReflectionClosure($f))->isShortClosure());
+});
+
+test('if this is correctly serialized', function () {
+    $o = new Clone1();
+    $f = $o->create();
+    $f = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
+    $f = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
+    test()->assertEquals(1, $f());
+});
+
+test('test', function ($value) {
+    $f = test()->f;
+    return $f($value);
+});
+
+// Helpers
+function __construct(Closure $f)
 {
-    public function testCustomSerialization()
-    {
-        $f =  function ($value){
-            return $value;
-        };
-
-        $a = new Abc($f);
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-        $this->assertTrue($u->test(true));
-    }
-
-    public function testCustomSerializationSameObjects()
-    {
-        $f =  function ($value){
-            return $value;
-        };
-
-        $i = new Abc($f);
-        $a = array($i, $i);
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-
-        $this->assertTrue($u[0] === $u[1]);
-    }
-
-    public function testCustomSerializationThisObject1()
-    {
-        $a = new A2();
-        $a = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-        $this->assertEquals('Hello, World!', $a->getPhrase());
-    }
-
-    public function testCustomSerializationThisObject2()
-    {
-        $a = new A2();
-        $a = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-        $this->assertTrue($a->getEquality());
-    }
-
-    public function testCustomSerializationSameClosures()
-    {
-        $f =  function ($value){
-            return $value;
-        };
-
-        $i = new Abc($f);
-        $a = array($i, $i);
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-        $this->assertTrue($u[0]->getF() === $u[1]->getF());
-    }
-
-    public function testCustomSerializationSameClosures2()
-    {
-        $f =  function ($value){
-            return $value;
-        };
-
-        $a = array(new Abc($f), new Abc($f));
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-        $this->assertTrue($u[0]->getF() === $u[1]->getF());
-    }
-
-    public function testPrivateMethodClone()
-    {
-        $a = new Clone1();
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($a));
-        $this->assertEquals(1, $u->value());
-    }
-
-    public function testPrivateMethodClone2()
-    {
-        $a = new Clone1();
-        $f = function () use($a){
-            return $a->value();
-        };
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-        $this->assertEquals(1, $u());
-    }
-
-    public function testNestedObjects()
-    {
-        $parent = new Entity();
-        $child = new Entity();
-        $parent->children[] = $child;
-        $child->parent = $parent;
-
-        $f = function () use($parent, $child){
-            return $parent === $child->parent;
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-        $this->assertTrue($u());
-    }
-
-    public function testNestedObjects2()
-    {
-        $child = new stdClass();
-        $parent = new stdClass();
-        $child->parent = $parent;
-        $parent->childern = [$child];
-        $parent->closure = function () use($child){
-            return true;
-        };
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent))->closure;
-        $this->assertTrue($u());
-    }
-
-    public function testNestedObjects3()
-    {
-        $obj = new \stdClass;
-        $obj->closure = function ($arg) use ($obj) {
-            return $arg === $obj;
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($obj));
-        $c = $u->closure;
-        $this->assertTrue($c($u));
-    }
-
-    public function testNestedObjects4()
-    {
-        $parent = new \stdClass;
-        $child1 = new \stdClass;
-
-        $child1->parent = $parent;
-
-        $parent->closure = function ($p) use ($child1) {
-            return $child1->parent === $p;
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent));
-        $c = $u->closure;
-        $this->assertTrue($c($u));
-    }
-
-    public function testNestedObjects5()
-    {
-        $parent = new \stdClass;
-        $child1 = new \stdClass;
-        $child2 = new \stdClass;
-
-        $child1->parent = $parent;
-        $child2->parent = $parent;
-
-        $parent->closure = function ($p) use ($child1, $child2) {
-            return $child1->parent === $child2->parent && $child1->parent === $p;
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($parent));
-        $c = $u->closure;
-        $this->assertTrue($c($u));
-    }
-
-    public function testPrivatePropertyInParentClass()
-    {
-        $instance = new ChildClass;
-
-        $closure = function () use ($instance) {
-            return $instance->getFoobar();
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
-        $this->assertSame(['test'], $u());
-    }
-
-    public function testInternalClass1()
-    {
-        $date = new \DateTime();
-        $date->setDate(2018, 2, 23);
-
-        $closure = function () use($date){
-            return $date->format('Y-m-d');
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
-        $this->assertEquals('2018-02-23', $u());
-    }
-
-    public function testInternalClass2()
-    {
-        $date = new \DateTime();
-        $date->setDate(2018, 2, 23);
-        $instance = (object)['date' => $date];
-        $closure = function () use($instance){
-            return $instance->date->format('Y-m-d');
-        };
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($closure));
-        $this->assertEquals('2018-02-23', $u());
-    }
-
-    public function testInternalClass3()
-    {
-        $date = new \DateTime();
-        $date->setDate(2018, 2, 23);
-        $instance = (object)['date' => $date];
-
-        $u = \Opis\Closure\unserialize(\Opis\Closure\serialize($instance));
-        $this->assertEquals('2018-02-23', $u->date->format('Y-m-d'));
-    }
-
-
-    public function testObjectReserialization()
-    {
-        $o = (object)['foo'=>'bar'];
-        $s1 = \Opis\Closure\serialize($o);
-        $o = \Opis\Closure\unserialize($s1);
-        $s2 = \Opis\Closure\serialize($o);
-
-        $this->assertEquals($s1, $s2);
-    }
-
-    public function testIsShortClosure()
-    {
-        $f = function () { };
-
-        $this->assertFalse((new ReflectionClosure($f))->isShortClosure());
-    }
-
-    public function testIfThisIsCorrectlySerialized() {
-        $o = new Clone1();
-        $f = $o->create();
-        $f = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-        $f = \Opis\Closure\unserialize(\Opis\Closure\serialize($f));
-        $this->assertEquals(1, $f());
-    }
+    test()->f = $f;
 }
 
-class Abc
+function getF()
 {
-    private $f;
-
-    public function __construct(Closure $f)
-    {
-        $this->f = $f;
-    }
-
-    public function getF()
-    {
-        return $this->f;
-    }
-
-    public function test($value)
-    {
-        $f = $this->f;
-        return $f($value);
-    }
+    return test()->f;
 }
 
-class Clone1
+function __clone()
 {
-    private $a = 1;
-
-    private function __clone()
-    {
-    }
-
-    public function value()
-    {
-        return $this->a;
-    }
-
-    public function create() {
-        return function () {
-            return $this->a;
-        };
-    }
 }
 
-class Entity
+function value()
 {
-    public $parent;
-    public $children = [];
+    return test()->a;
 }
 
-class ParentClass
-{
-    private $foobar = ['test'];
-
-    public function getFoobar()
-    {
-        return $this->foobar;
-    }
+function create() {
+    return function () {
+        return test()->a;
+    };
 }
 
-class ChildClass extends ParentClass { }
+function getFoobar()
+{
+    return test()->foobar;
+}

@@ -5,458 +5,401 @@
  * Licensed under the MIT License
  * =========================================================================== */
 
-namespace Opis\Closure\Test;
-
 use Closure;
 use stdClass;
 use Serializable;
 use Opis\Closure\ReflectionClosure;
 use Opis\Closure\SerializableClosure;
 
-class ClosureTest extends \PHPUnit\Framework\TestCase
-{
-    protected function s($closure)
-    {
-        if($closure instanceof Closure)
-        {
-            $closure = new SerializableClosure($closure);
+test('closure use return value', function () {
+    $a = 100;
+    $c = function() use($a) {
+        return $a;
+    };
+
+    $u = s($c);
+
+    test()->assertEquals($u(), $a);
+});
+
+test('closure use transformation', function () {
+    $a = 100;
+
+    $c = unserialize(serialize(new TransformingSerializableClosure(function () use ($a) {
+        return $a;
+    })));
+
+    test()->assertEquals(100, $c());
+});
+
+test('closure use return closure', function () {
+    $a = function($p){
+        return $p + 1;
+    };
+    $b = function($p) use($a){
+        return $a($p);
+    };
+
+    $v = 1;
+    $u = s($b);
+
+    test()->assertEquals($v + 1, $u(1));
+});
+
+test('closure use return closure by ref', function () {
+    $a = function($p){
+        return $p + 1;
+    };
+    $b = function($p) use(&$a){
+        return $a($p);
+    };
+
+    $v = 1;
+    $u = s($b);
+
+    test()->assertEquals($v + 1, $u(1));
+});
+
+test('closure use self', function () {
+
+    $a = function() use (&$a){
+        return $a;
+    };
+    $u = s($a);
+
+    test()->assertEquals($u, $u());
+});
+
+test('closure use self in array', function () {
+
+    $a = array();
+
+    $b = function() use(&$a){
+        return $a[0];
+    };
+
+    $a[] = $b;
+
+    $u = s($b);
+
+    test()->assertEquals($u, $u());
+});
+
+test('closure use self in object', function () {
+
+    $a = new stdClass();
+
+    $b = function() use(&$a){
+        return $a->me;
+    };
+
+    $a->me = $b;
+
+    $u = s($b);
+
+    test()->assertEquals($u, $u());
+});
+
+test('closure use self in multi array', function () {
+    $a = array();
+    $x = null;
+
+    $b = function() use(&$x){
+        return $x;
+    };
+
+    $c = function($i) use (&$a) {
+        $f = $a[$i];
+        return $f();
+    };
+
+    $a[] = $b;
+    $a[] = $c;
+    $x = $c;
+
+    $u = s($c);
+
+    test()->assertEquals($u, $u(0));
+});
+
+test('closure use self in instance', function () {
+    $i = new ObjSelf();
+    $c = function ($c) use($i){
+        return $c === $i->o;
+    };
+    $i->o = $c;
+    $u = s($c);
+    test()->assertTrue($u($u));
+});
+
+test('closure use self in instance2', function () {
+    $i = new ObjSelf();
+    $c = function () use(&$c, $i){
+        return $c == $i->o;
+    };
+    $i->o = &$c;
+    $u = s($c);
+    test()->assertTrue($u());
+});
+
+test('closure serialization twice', function () {
+    $a = function($p){
+        return $p;
+    };
+
+    $b = function($p) use($a){
+        return $a($p);
+    };
+
+    $u = s(s($b));
+
+    test()->assertEquals('ok', $u('ok'));
+});
+
+test('closure real serialization', function () {
+    $f = function($a, $b){
+        return $a + $b;
+    };
+
+    $u = s(s($f));
+    test()->assertEquals(5, $u(2, 3));
+});
+
+test('closure objectin object', function () {
+    $f = function() use (&$f) {
+        return $f;
+    };
+
+    $t = new ObjnObj();
+    $t->func = $f;
+
+    $t2 = new ObjnObj();
+    $t2->func = $f;
+
+    $t->subtest = $t2;
+
+    $x = unserialize(serialize($t));
+
+    $g = $x->func;
+    $g = $g();
+
+    $ok = $x->func == $x->subtest->func;
+    $ok = $ok && ($x->subtest->func == $g);
+
+    test()->assertEquals(true, $ok);
+});
+
+test('closure nested', function () {
+    $o = function($a) {
+
+        // this should never happen
+        if ($a === false) {
+            return false;
         }
 
-        return unserialize(serialize($closure))->getClosure();
-    }
-
-    public function testClosureUseReturnValue()
-    {
-        $a = 100;
-        $c = function() use($a)
-        {
-            return $a;
+        $n = function ($b) {
+            return !$b;
         };
 
-        $u = $this->s($c);
+        $ns = unserialize(serialize(new SerializableClosure($n)));
 
-        $this->assertEquals($u(), $a);
-    }
+        return $ns(false);
+    };
 
-    public function testClosureUseTransformation()
-    {
-        $a = 100;
+    $os = s($o);
 
-        $c = unserialize(serialize(new TransformingSerializableClosure(function () use ($a)
-        {
-            return $a;
-        })));
+    test()->assertEquals(true, $os(true));
+});
 
-        $this->assertEquals(100, $c());
-    }
+test('closure curly syntax', function () {
+    $f = function (){
+        $x = (object)array('a' => 1, 'b' => 3);
+        $b = 'b';
+        return $x->{'a'} + $x->{$b};
+    };
+    $f = s($f);
+    test()->assertEquals(4, $f());
+});
 
-    public function testClosureUseReturnClosure()
-    {
-        $a = function($p){
-            return $p + 1;
-        };
-        $b = function($p) use($a){
-            return $a($p);
-        };
+test('closure bind to object', function () {
+    $a = new A();
 
-        $v = 1;
-        $u = $this->s($b);
+    $b = function(){
+        return aPublic();
+    };
 
-        $this->assertEquals($v + 1, $u(1));
-    }
+    $b = $b->bindTo($a, __NAMESPACE__ . "\\A");
 
-    public function testClosureUseReturnClosureByRef()
-    {
-        $a = function($p){
-            return $p + 1;
-        };
-        $b = function($p) use(&$a){
-            return $a($p);
-        };
-
-        $v = 1;
-        $u = $this->s($b);
-
-        $this->assertEquals($v + 1, $u(1));
-    }
-
-    public function testClosureUseSelf()
-    {
-
-        $a = function() use (&$a){
-            return $a;
-        };
-        $u = $this->s($a);
-
-        $this->assertEquals($u, $u());
-    }
-
-    public function testClosureUseSelfInArray()
-    {
+    $u = s($b);
 
-        $a = array();
-
-        $b = function() use(&$a){
-            return $a[0];
-        };
-
-        $a[] = $b;
-
-        $u = $this->s($b);
-
-        $this->assertEquals($u, $u());
-    }
-
-    public function testClosureUseSelfInObject()
-    {
+    test()->assertEquals('public called', $u());
+});
 
-        $a = new stdClass();
+test('closure bind to object scope', function () {
+    $a = new A();
 
-        $b = function() use(&$a){
-            return $a->me;
-        };
+    $b = function(){
+        return aProtected();
+    };
 
-        $a->me = $b;
+    $b = $b->bindTo($a, __NAMESPACE__ . "\\A");
 
-        $u = $this->s($b);
+    $u = s($b);
 
-        $this->assertEquals($u, $u());
-    }
+    test()->assertEquals('protected called', $u());
+});
 
-    public function testClosureUseSelfInMultiArray()
-    {
-        $a = array();
-        $x = null;
+test('closure bind to object static scope', function () {
+    $a = new A();
 
-        $b = function() use(&$x){
-            return $x;
-        };
+    $b = function(){
+        return static::aStaticProtected();
+    };
 
-        $c = function($i) use (&$a) {
-            $f = $a[$i];
-            return $f();
-        };
-
-        $a[] = $b;
-        $a[] = $c;
-        $x = $c;
-
-        $u = $this->s($c);
-
-        $this->assertEquals($u, $u(0));
-    }
-
-    public function testClosureUseSelfInInstance()
-    {
-        $i = new ObjSelf();
-        $c = function ($c) use($i){
-            return $c === $i->o;
-        };
-        $i->o = $c;
-        $u = $this->s($c);
-        $this->assertTrue($u($u));
-    }
-
-    public function testClosureUseSelfInInstance2()
-    {
-        $i = new ObjSelf();
-        $c = function () use(&$c, $i){
-            return $c == $i->o;
-        };
-        $i->o = &$c;
-        $u = $this->s($c);
-        $this->assertTrue($u());
-    }
-
-    public function testClosureSerializationTwice()
-    {
-        $a = function($p){
-            return $p;
-        };
-
-        $b = function($p) use($a){
-            return $a($p);
-        };
+    $b = $b->bindTo(null, __NAMESPACE__ . "\\A");
 
-        $u = $this->s($this->s($b));
+    $u = s($b);
 
-        $this->assertEquals('ok', $u('ok'));
-    }
+    test()->assertEquals('static protected called', $u());
+});
 
-    public function testClosureRealSerialization()
-    {
-        $f = function($a, $b){
-            return $a + $b;
-        };
+test('closure static', function () {
+    $f = static function(){};
+    $rc = new ReflectionClosure($f);
+    test()->assertTrue($rc->isStatic());
+});
 
-        $u = $this->s($this->s($f));
-        $this->assertEquals(5, $u(2, 3));
-    }
+test('closure static fail', function () {
+    $f = static
+        // This will not work
+    function(){};
+    $rc = new ReflectionClosure($f);
+    test()->assertFalse($rc->isStatic());
+});
 
-    public function testClosureObjectinObject()
-    {
-        $f = function() use (&$f) {
-            return $f;
-        };
+test('create closure', function () {
+    $closure = SerializableClosure::createClosure('$a, $b', 'return $a + $b;');
 
-        $t = new ObjnObj();
-        $t->func = $f;
+    test()->assertNotNull($closure);
+    test()->assertTrue($closure instanceof Closure);
+    test()->assertEquals(17, $closure(7, 10));
 
-        $t2 = new ObjnObj();
-        $t2->func = $f;
+    $closure = s($closure);
 
-        $t->subtest = $t2;
+    test()->assertNotNull($closure);
+    test()->assertTrue($closure instanceof Closure);
+    test()->assertEquals(11, $closure(5, 6));
+});
 
-        $x = unserialize(serialize($t));
+test('closure scope remains the same', function () {
+    $f = function () { static $i = 0;};
+    $o = s($f);
 
-        $g = $x->func;
-        $g = $g();
+    $rf = new ReflectionClosure($f);
+    $ro = new ReflectionClosure($o);
 
-        $ok = $x->func == $x->subtest->func;
-        $ok = $ok && ($x->subtest->func == $g);
-
-        $this->assertEquals(true, $ok);
-    }
-
-    public function testClosureNested()
-    {
-        $o = function($a) {
-
-            // this should never happen
-            if ($a === false) {
-                return false;
-            }
-
-            $n = function ($b) {
-                return !$b;
-            };
-
-            $ns = unserialize(serialize(new SerializableClosure($n)));
-
-            return $ns(false);
-        };
-
-        $os = $this->s($o);
-
-        $this->assertEquals(true, $os(true));
-    }
-
-    public function testClosureCurlySyntax()
-    {
-        $f = function (){
-            $x = (object)array('a' => 1, 'b' => 3);
-            $b = 'b';
-            return $x->{'a'} + $x->{$b};
-        };
-        $f = $this->s($f);
-        $this->assertEquals(4, $f());
-    }
-
-    public function testClosureBindToObject()
-    {
-        $a = new A();
-
-        $b = function(){
-            return $this->aPublic();
-        };
-
-        $b = $b->bindTo($a, __NAMESPACE__ . "\\A");
-
-        $u = $this->s($b);
-
-        $this->assertEquals('public called', $u());
-    }
-
-    public function testClosureBindToObjectScope()
-    {
-        $a = new A();
-
-        $b = function(){
-            return $this->aProtected();
-        };
-
-        $b = $b->bindTo($a, __NAMESPACE__ . "\\A");
-
-        $u = $this->s($b);
-
-        $this->assertEquals('protected called', $u());
-    }
-
-    public function testClosureBindToObjectStaticScope()
-    {
-        $a = new A();
-
-        $b = function(){
-            return static::aStaticProtected();
-        };
-
-        $b = $b->bindTo(null, __NAMESPACE__ . "\\A");
-
-        $u = $this->s($b);
-
-        $this->assertEquals('static protected called', $u());
-    }
-
-
-    public function testClosureStatic()
-    {
-        $f = static function(){};
-        $rc = new ReflectionClosure($f);
-        $this->assertTrue($rc->isStatic());
-    }
-
-    public function testClosureStaticFail()
-    {
-        $f = static
-            // This will not work
-        function(){};
-        $rc = new ReflectionClosure($f);
-        $this->assertFalse($rc->isStatic());
-    }
-
-    public function testCreateClosure()
-    {
-        $closure = SerializableClosure::createClosure('$a, $b', 'return $a + $b;');
-
-        $this->assertNotNull($closure);
-        $this->assertTrue($closure instanceof Closure);
-        $this->assertEquals(17, $closure(7, 10));
-
-        $closure = $this->s($closure);
-
-        $this->assertNotNull($closure);
-        $this->assertTrue($closure instanceof Closure);
-        $this->assertEquals(11, $closure(5, 6));
-    }
-
-    public function testClosureScopeRemainsTheSame()
-    {
-        $f = function () { static $i = 0;};
-        $o = $this->s($f);
-
-        $rf = new ReflectionClosure($f);
-        $ro = new ReflectionClosure($o);
-
-        $this->assertNotNull($rf->getClosureScopeClass());
-        $this->assertNotNull($ro->getClosureScopeClass());
-        $this->assertEquals($rf->getClosureScopeClass()->name, $ro->getClosureScopeClass()->name);
-        $this->assertEquals($rf->getClosureScopeClass()->name, $ro->getClosureScopeClass()->name);
-        $this->assertEquals(__CLASS__, $ro->getClosureScopeClass()->name);
-
-        $f = $f->bindTo(null, null);
-        $o = $this->s($f);
-        $rf = new ReflectionClosure($f);
-        $ro = new ReflectionClosure($o);
-
-        $this->assertNull($rf->getClosureScopeClass());
-        $this->assertNull($ro->getClosureScopeClass());
-    }
-
-}
-
-class ObjnObj implements Serializable {
-    public $subtest;
-    public $func;
-
-    public function serialize() {
-
-        SerializableClosure::enterContext();
-
-        $object = serialize(array(
-            'subtest' => $this->subtest,
-            'func' => SerializableClosure::from($this->func),
-        ));
-
-        SerializableClosure::exitContext();
-
-        return $object;
-    }
-
-    public function unserialize($data) {
-
-        $data = unserialize($data);
-
-        $this->subtest = $data['subtest'];
-        $this->func = $data['func']->getClosure();
-    }
-}
-
-class A
+    test()->assertNotNull($rf->getClosureScopeClass());
+    test()->assertNotNull($ro->getClosureScopeClass());
+    test()->assertEquals($rf->getClosureScopeClass()->name, $ro->getClosureScopeClass()->name);
+    test()->assertEquals($rf->getClosureScopeClass()->name, $ro->getClosureScopeClass()->name);
+    test()->assertEquals(__CLASS__, $ro->getClosureScopeClass()->name);
+
+    $f = $f->bindTo(null, null);
+    $o = s($f);
+    $rf = new ReflectionClosure($f);
+    $ro = new ReflectionClosure($o);
+
+    test()->assertNull($rf->getClosureScopeClass());
+    test()->assertNull($ro->getClosureScopeClass());
+});
+
+// Helpers
+function s($closure)
 {
-    protected static function aStaticProtected() {
-        return 'static protected called';
+    if($closure instanceof Closure)
+    {
+        $closure = new SerializableClosure($closure);
     }
 
-    protected function aProtected()
-    {
-        return 'protected called';
-    }
-
-    public function aPublic()
-    {
-        return 'public called';
-    }
+    return unserialize(serialize($closure))->getClosure();
 }
 
-class A2
+function serialize() {
+
+    SerializableClosure::enterContext();
+
+    $object = serialize(array(
+        'subtest' => test()->subtest,
+        'func' => SerializableClosure::from(test()->func),
+    ));
+
+    SerializableClosure::exitContext();
+
+    return $object;
+}
+
+function unserialize($data) {
+
+    $data = unserialize($data);
+
+    test()->subtest = $data['subtest'];
+    test()->func = $data['func']->getClosure();
+}
+
+function aStaticProtected() {
+    return 'static protected called';
+}
+
+function aProtected()
 {
-    private $phrase = 'Hello, World!';
-    private $closure1;
-    private $closure2;
-    private $closure3;
-
-    public function __construct()
-    {
-        $this->closure1 = function (){
-            return $this->phrase;
-        };
-        $this->closure2 = function (){
-            return $this;
-        };
-        $this->closure3 = function (){
-            $c = $this->closure2;
-            return $this === $c();
-        };
-    }
-
-    public function getPhrase()
-    {
-        $c = $this->closure1;
-        return $c();
-    }
-
-    public function getEquality()
-    {
-        $c = $this->closure3;
-        return $c();
-    }
+    return 'protected called';
 }
 
-
-class ObjSelf
+function aPublic()
 {
-    public $o;
+    return 'public called';
 }
 
-
-class TransformingSerializableClosure extends SerializableClosure
+function __construct()
 {
-    protected function transformUseVariables($data)
-    {
-        foreach ($data as $key => $value) {
-            $data[$key] = $value * 2;
-        }
-
-        return $data;
-    }
-
-    protected function resolveUseVariables($data)
-    {
-        foreach ($data as $key => $value) {
-            $data[$key] = $value / 2;
-        }
-
-        return $data;
-    }
+    test()->closure1 = function (){
+        return test()->phrase;
+    };
+    test()->closure2 = function (){
+        return $this;
+    };
+    test()->closure3 = function (){
+        $c = test()->closure2;
+        return $this === $c();
+    };
 }
 
+function getPhrase()
+{
+    $c = test()->closure1;
+    return $c();
+}
+
+function getEquality()
+{
+    $c = test()->closure3;
+    return $c();
+}
+
+function transformUseVariables($data)
+{
+    foreach ($data as $key => $value) {
+        $data[$key] = $value * 2;
+    }
+
+    return $data;
+}
+
+function resolveUseVariables($data)
+{
+    foreach ($data as $key => $value) {
+        $data[$key] = $value / 2;
+    }
+
+    return $data;
+}
